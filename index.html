@@ -98,7 +98,7 @@ body{font-family:'Noto Sans JP',sans-serif;background:var(--bg);color:var(--text
 .cskill{font-size:.6rem;color:var(--gold);background:#c9a22710;border:1px solid #c9a22728;border-radius:4px;padding:.22rem .45rem}
 .lkbadge{position:absolute;top:.5rem;right:.5rem;font-size:.52rem;background:rgba(0,0,0,.65);border:1px solid var(--b2);border-radius:4px;padding:.12rem .38rem;color:var(--t3)}
 /* MAP */
-.map-wrap{height:100%;background:linear-gradient(to bottom,rgba(8,8,16,.5),rgba(8,8,16,.85));display:flex;flex-direction:column;overflow:hidden}
+.map-wrap{height:100%;background:linear-gradient(to bottom,rgba(8,8,16,.5),rgba(8,8,16,.85));display:flex;flex-direction:column;overflow:hidden;position:relative;z-index:2}
 .map-body{flex:1;overflow:auto;padding:1.5rem 2rem}
 .map-hdr{text-align:center;margin-bottom:1rem}
 .map-period{font-size:.62rem;letter-spacing:.2em;color:var(--p3);text-transform:uppercase}
@@ -117,7 +117,7 @@ body{font-family:'Noto Sans JP',sans-serif;background:var(--bg);color:var(--text
 .nb-s{background:#2ecc7118;color:var(--green);border:1px solid #2ecc7138}.nb-el{background:#9b59b618;color:#c39bd3;border:1px solid #9b59b638}
 .nb-boss{background:#e74c3c28;color:var(--red);border:1px solid #e74c3c58}
 /* BATTLE */
-.battle-wrap{height:100%;background:linear-gradient(to bottom,rgba(8,8,16,.5),rgba(8,8,16,.88));display:flex;flex-direction:column}
+.battle-wrap{height:100%;background:linear-gradient(to bottom,rgba(8,8,16,.5),rgba(8,8,16,.88));display:flex;flex-direction:column;position:relative;z-index:2}
 .battle-main{flex:1;padding:.9rem;display:flex;flex-direction:column;gap:.75rem;overflow:hidden}
 .battle-arena{display:grid;grid-template-columns:1fr 70px 1fr;gap:.75rem;align-items:start;flex:1;min-height:0}
 .tpanel{background:rgba(12,12,22,.88);border:1px solid var(--border);border-radius:var(--r);padding:.75rem;backdrop-filter:blur(5px);max-height:275px;overflow-y:auto}
@@ -142,7 +142,7 @@ body{font-family:'Noto Sans JP',sans-serif;background:var(--bg);color:var(--text
 .ll{padding:.03rem 0}.la{color:var(--red)}.lh{color:var(--green)}.ls{color:var(--gold)}.li{color:var(--blue)}
 .bbtns{display:flex;gap:.55rem;justify-content:center;padding-bottom:.25rem}
 /* PANELS */
-.pscreen{height:100%;display:flex;flex-direction:column;overflow:hidden}
+.pscreen{height:100%;display:flex;flex-direction:column;overflow:hidden;position:relative}
 .pbg{position:absolute;inset:0;background-size:cover;background-position:center;z-index:0}
 .pcontent{position:relative;z-index:1;flex:1;overflow-y:auto;padding:1.2rem;
   background:linear-gradient(to bottom,rgba(8,8,16,.65),rgba(8,8,16,.92));
@@ -375,9 +375,9 @@ function spawnNum(n,t,el){const r=el?el.getBoundingClientRect():{top:300,left:wi
 // PETALS
 (()=>{const c=document.getElementById('particles');for(let i=0;i<16;i++){const p=document.createElement('div');p.className='petal';const sz=Math.random()*5+4;p.style.cssText=`width:${sz}px;height:${sz}px;left:${Math.random()*100}%;opacity:${Math.random()*.5+.2};animation-duration:${Math.random()*8+7}s;animation-delay:${Math.random()*10}s;background:hsl(${Math.random()*25+340},75%,${Math.random()*18+78}%)`;c.appendChild(p);}})();
 
-// STICKER MAP - position in stickers.jpg (4 col x 2 row)
+// Sticker map — stickers.jpg é 1024×682, grid 4×2, célula 256×341
 const SP={renjiro:[0,0],aoi:[1,0],kazuo:[2,0],mika:[3,0],sora:[0,1],yuuki:[1,1],taiga:[2,1],haru:[3,1]};
-const SW=384,SH=512; // approximate cell size in original 1536x1024
+const SW=256,SH=341;
 function stickerBg(id){const pos=SP[id];if(!pos)return'';return `background-image:url('assets/img/stickers.jpg');background-size:${SW*4}px ${SH*2}px;background-position:-${pos[0]*SW}px -${pos[1]*SH}px;background-repeat:no-repeat;`;}
 
 // CHARS
@@ -676,7 +676,7 @@ function showReward(){
 // GAME OVER
 function gameOver(won){G.won=won;const score=G.battles*100+(won?500:0)+G.gold*2;G.lastScore=score;document.getElementById('goico').textContent=won?'🏆':'💀';document.getElementById('gottl').textContent=won?'Vitória Completa!':'Derrota';document.getElementById('gosub').textContent=won?'Você dominou Jodan High! Lendário!':'Sua jornada termina aqui.';document.getElementById('gobatts').textContent=G.battles;document.getElementById('goperiod').textContent=G.curPeriod;document.getElementById('goscore').textContent=score;document.getElementById('nameinput').value='';if(!won)playBgm('shadow',.4);thenTrans(()=>showScreen('gameover'));}
 // HUD
-function updateHud(id){const el=document.getElementById(id);if(!el)return;const hpP=G.team.length?~~(G.team.filter(m=>m.hp>0).length/G.team.length*100):0;const p=G.curPeriod||1;const ss=G.hero&&stickerBg(G.hero.id);const imgHtml=ss?`<div class="hud-art" style="${ss}width:36px;height:45px;background-size:${384*4}px ${512*2}px;border-radius:4px"></div>`:`<span class="hud-art">${G.hero?.art||'⚔'}</span>`;el.innerHTML=`<div style="display:flex;align-items:center;gap:.5rem">${imgHtml}<div><div class="hud-name">${G.hero?.name||'?'}</div><div class="hud-bars"><div class="brow"><span class="blbl">time</span><div class="bbg"><div class="bf hp" style="width:${hpP}%"></div></div></div></div></div></div><div class="hudteam">${G.team.map(m=>`<div class="tdot${m.hp<=0?' dead':''}" title="${m.name}">${m.art}</div>`).join('')}${G.team.length<4?'<div class="tdot empty">+</div>':''}</div><div class="hud-gold">💰 ${G.gold}</div><div class="hud-r">Trim. <strong>${p}</strong><br>${G.battles} batalhas</div><button class="mcbtn" onclick="toggleMute()">🔊</button>`;}
+function updateHud(id){const el=document.getElementById(id);if(!el)return;const hpP=G.team.length?~~(G.team.filter(m=>m.hp>0).length/G.team.length*100):0;const p=G.curPeriod||1;const ss=G.hero&&stickerBg(G.hero.id);const imgHtml=ss?`<div class="hud-art" style="${ss}width:36px;height:45px;background-size:${256*4}px ${341*2}px;border-radius:4px"></div>`:`<span class="hud-art">${G.hero?.art||'⚔'}</span>`;el.innerHTML=`<div style="display:flex;align-items:center;gap:.5rem">${imgHtml}<div><div class="hud-name">${G.hero?.name||'?'}</div><div class="hud-bars"><div class="brow"><span class="blbl">time</span><div class="bbg"><div class="bf hp" style="width:${hpP}%"></div></div></div></div></div></div><div class="hudteam">${G.team.map(m=>`<div class="tdot${m.hp<=0?' dead':''}" title="${m.name}">${m.art}</div>`).join('')}${G.team.length<4?'<div class="tdot empty">+</div>':''}</div><div class="hud-gold">💰 ${G.gold}</div><div class="hud-r">Trim. <strong>${p}</strong><br>${G.battles} batalhas</div><button class="mcbtn" onclick="toggleMute()">🔊</button>`;}
 // SCREENS
 function showScreen(n){document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));const e=document.getElementById('screen-'+n);if(e)e.classList.add('active');}
 function thenTrans(fn){const t=document.getElementById('trans');t.classList.add('go');setTimeout(()=>{fn();t.classList.remove('go');},380);}
