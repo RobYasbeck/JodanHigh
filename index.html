@@ -1,0 +1,701 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Jodan High Chronicles</title>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700;900&family=Noto+Sans+JP:wght@400;700&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --bg:#080810;--bg2:#0f0f1a;--bg3:#181828;
+  --purple:#7c5cbf;--p2:#a07de0;--p3:#c4a8f5;
+  --gold:#c9a227;--red:#e74c3c;--green:#2ecc71;--blue:#3498db;
+  --text:#e8e4f0;--t2:#a09ab8;--t3:#5a5475;
+  --border:#252040;--b2:#3d3660;--r:12px;--r2:8px;
+}
+body{font-family:'Noto Sans JP',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;overflow:hidden}
+.screen{display:none;width:100vw;height:100vh;position:fixed;top:0;left:0;flex-direction:column;overflow:hidden}
+.screen.active{display:flex;animation:fadeIn .5s}
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+.bg-layer{position:absolute;inset:0;background-size:cover;background-position:center;z-index:0;transition:background-image .8s}
+.zi1{position:relative;z-index:1}
+#particles{position:fixed;inset:0;pointer-events:none;z-index:3;overflow:hidden}
+.petal{position:absolute;border-radius:50% 0;animation:fall linear infinite}
+@keyframes fall{0%{transform:translateY(-20px) rotate(0)}100%{transform:translateY(110vh) rotate(720deg) translateX(80px)}}
+.fx-overlay{position:fixed;inset:0;pointer-events:none;z-index:100}
+.fx-hit{animation:fxH .3s}
+@keyframes fxH{0%{background:rgba(231,76,60,.35)}100%{background:transparent}}
+.dmg-num{position:absolute;font-family:'Cinzel',serif;font-weight:900;font-size:1.6rem;pointer-events:none;animation:dmgF 1s forwards;text-shadow:0 2px 6px #000}
+.dn-atk{color:#ff5555}.dn-heal{color:#55ff88}.dn-skill{color:#f0c040}
+@keyframes dmgF{0%{opacity:1;transform:translateY(0)}60%{opacity:1;transform:translateY(-55px) scale(1.2)}100%{opacity:0;transform:translateY(-85px) scale(.7)}}
+.screen-trans{position:fixed;inset:0;background:#000;z-index:9998;pointer-events:none;opacity:0}
+.screen-trans.go{animation:trs .4s ease}
+@keyframes trs{0%{opacity:0}50%{opacity:1}100%{opacity:0}}
+/* BTN */
+.btn{border:none;cursor:pointer;font-family:'Cinzel',serif;letter-spacing:.08em;transition:all .2s}
+.btn-main{background:linear-gradient(135deg,#7c5cbf,#5a3d9e);color:#fff;padding:.9rem 2.5rem;border-radius:var(--r);font-size:.95rem;box-shadow:0 4px 20px rgba(124,92,191,.35)}
+.btn-main:hover{transform:translateY(-2px);box-shadow:0 8px 30px rgba(124,92,191,.55)}
+.btn-ghost{background:transparent;border:1px solid var(--b2);color:var(--t2);padding:.65rem 1.8rem;border-radius:var(--r);font-size:.85rem}
+.btn-ghost:hover{border-color:var(--purple);color:var(--p3)}
+.btn-sm{padding:.5rem 1.2rem;font-size:.8rem;border-radius:var(--r2)}
+/* HUD */
+.hud{background:rgba(8,8,16,.92);border-bottom:1px solid var(--border);padding:.5rem 1.2rem;
+  display:flex;align-items:center;gap:1rem;flex-shrink:0;flex-wrap:wrap;backdrop-filter:blur(8px);z-index:10;position:relative}
+.hud-art{font-size:1.3rem}
+.hud-name{font-family:'Cinzel',serif;font-size:.78rem}
+.hud-bars{min-width:75px}
+.brow{display:flex;align-items:center;gap:.3rem}
+.blbl{font-size:.52rem;color:var(--t3);text-transform:uppercase;min-width:1.2rem}
+.bbg{flex:1;height:4px;background:var(--bg3);border-radius:2px;overflow:hidden}
+.bf{height:100%;border-radius:2px;transition:width .4s}
+.bf.hp{background:var(--green)}
+.hud-gold{font-family:'Cinzel',serif;font-size:.85rem;color:var(--gold)}
+.hud-r{margin-left:auto;font-size:.68rem;color:var(--t3);text-align:right}
+.hud-r strong{color:var(--p3);font-family:'Cinzel',serif}
+.tdot{font-size:.85rem;background:var(--bg3);border:1px solid var(--border);border-radius:4px;width:26px;height:26px;display:flex;align-items:center;justify-content:center}
+.tdot.dead{opacity:.18;filter:grayscale(1)}.tdot.empty{opacity:.18}
+.hudteam{display:flex;gap:.28rem}
+.mcbtn{background:transparent;border:1px solid var(--border);color:var(--t3);padding:.22rem .5rem;border-radius:5px;font-size:.65rem;cursor:pointer}
+.mcbtn:hover{border-color:var(--purple);color:var(--p3)}
+/* TITLE */
+#screen-title .bg-layer{background-image:url('assets/img/bg_morning.jpg')}
+.title-wrap{display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;position:relative;z-index:2;
+  background:linear-gradient(to bottom,rgba(8,8,16,.2),rgba(8,8,16,.75) 55%,rgba(8,8,16,.96))}
+.ttbadge{font-size:.68rem;letter-spacing:.25em;color:var(--p3);text-transform:uppercase;opacity:.8;margin-bottom:.5rem}
+.tttitle{font-family:'Cinzel',serif;font-size:clamp(3rem,8vw,6rem);letter-spacing:.04em;
+  text-shadow:0 0 60px #7c5cbf90,0 0 120px #7c5cbf50;line-height:1;margin-bottom:.3rem}
+.ttsub{font-family:'Cinzel',serif;font-size:clamp(.85rem,2vw,1.15rem);color:var(--gold);letter-spacing:.4em;margin-bottom:.5rem}
+.ttline{font-size:.82rem;color:var(--t2);max-width:340px;line-height:1.7;font-weight:300;margin-bottom:2rem}
+.sb-badge{font-size:.62rem;padding:.22rem .55rem;border-radius:20px;display:inline-flex;align-items:center;gap:.3rem;margin-bottom:.9rem}
+.sb-ok{background:#2ecc7110;border:1px solid #2ecc7135;color:var(--green)}
+.sb-err{background:#e74c3c10;border:1px solid #e74c3c35;color:var(--red)}
+.sb-load{background:#c9a22710;border:1px solid #c9a22735;color:var(--gold)}
+.lbbox{background:rgba(8,8,16,.82);border:1px solid var(--border);border-radius:var(--r);padding:.85rem 1.2rem;min-width:300px;backdrop-filter:blur(8px)}
+.lbhead{font-size:.58rem;letter-spacing:.2em;color:var(--t3);text-transform:uppercase;margin-bottom:.5rem}
+.lbrow{display:flex;align-items:center;gap:.7rem;padding:.3rem 0;border-bottom:1px solid var(--border);font-size:.8rem}
+.lbrow:last-child{border:none}
+.lbrank{font-family:'Cinzel',serif;color:var(--gold);min-width:1.4rem}
+.lbname{flex:1;color:var(--t2)}
+.lbscore{color:var(--p3);font-family:'Cinzel',serif}
+/* CHAR SELECT */
+#screen-char .bg-layer{background-image:url('assets/img/bg_students.jpg')}
+.char-select-wrap{height:100%;background:linear-gradient(to bottom,rgba(8,8,16,.6),rgba(8,8,16,.9));
+  display:flex;flex-direction:column;align-items:center;padding:1.2rem;overflow-y:auto;z-index:1;position:relative}
+.char-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(162px,1fr));gap:.75rem;max-width:980px;width:100%}
+.ccard{background:rgba(12,12,22,.88);border:1px solid var(--border);border-radius:var(--r);
+  padding:.9rem;cursor:pointer;transition:all .25s;text-align:center;position:relative;overflow:hidden;backdrop-filter:blur(6px)}
+.ccard:hover{border-color:var(--purple);transform:translateY(-5px);box-shadow:0 14px 32px rgba(124,92,191,.28)}
+.ccard-locked{opacity:.22;cursor:not-allowed;pointer-events:none;filter:grayscale(1)}
+.csticker{width:96px;height:120px;object-fit:cover;border-radius:7px;margin:0 auto .4rem;display:block;background:var(--bg3)}
+.cname{font-family:'Cinzel',serif;font-size:.86rem;margin-bottom:.12rem}
+.crole{font-size:.58rem;color:var(--p3);letter-spacing:.1em;text-transform:uppercase;margin-bottom:.45rem}
+.cstats{display:grid;grid-template-columns:1fr 1fr 1fr;gap:.22rem;margin-bottom:.45rem}
+.cst{background:var(--bg3);border-radius:4px;padding:.2rem}
+.cst-l{font-size:.5rem;color:var(--t3);text-transform:uppercase}
+.cst-v{font-size:.75rem;font-weight:700}
+.va{color:var(--red)}.vd{color:var(--blue)}.vh{color:var(--green)}
+.cskill{font-size:.6rem;color:var(--gold);background:#c9a22710;border:1px solid #c9a22728;border-radius:4px;padding:.22rem .45rem}
+.lkbadge{position:absolute;top:.5rem;right:.5rem;font-size:.52rem;background:rgba(0,0,0,.65);border:1px solid var(--b2);border-radius:4px;padding:.12rem .38rem;color:var(--t3)}
+/* MAP */
+.map-wrap{height:100%;background:linear-gradient(to bottom,rgba(8,8,16,.5),rgba(8,8,16,.85));display:flex;flex-direction:column;overflow:hidden;position:relative;z-index:2}
+.map-body{flex:1;overflow:auto;padding:1.5rem 2rem}
+.map-hdr{text-align:center;margin-bottom:1rem}
+.map-period{font-size:.62rem;letter-spacing:.2em;color:var(--p3);text-transform:uppercase}
+.map-ttl{font-family:'Cinzel',serif;font-size:1.05rem}
+.map-path{position:relative;max-width:680px;margin:0 auto}
+.node{width:62px;height:62px;border-radius:50%;border:2px solid var(--border);display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:pointer;transition:all .25s;position:absolute;background:rgba(12,12,22,.92);backdrop-filter:blur(4px)}
+.node.av{border-color:var(--purple);box-shadow:0 0 14px rgba(124,92,191,.45);cursor:pointer}
+.node.av:hover{transform:scale(1.12);box-shadow:0 0 26px rgba(124,92,191,.75)}
+.node.done{border-color:var(--green);opacity:.5;cursor:default}
+.node.lk{opacity:.16;cursor:default}
+.node.boss-n.av{border-color:var(--red);animation:bpulse 1.8s infinite}
+@keyframes bpulse{0%,100%{box-shadow:0 0 14px rgba(231,76,60,.45)}50%{box-shadow:0 0 30px rgba(231,76,60,.9)}}
+.nicon{font-size:1.35rem}.nlbl{font-size:.4rem;color:var(--t3);text-transform:uppercase;margin-top:1px}
+.nbadge{position:absolute;top:-9px;right:-9px;font-size:.42rem;padding:.1rem .32rem;border-radius:3px;font-weight:700;text-transform:uppercase;pointer-events:none}
+.nb-b{background:#e74c3c18;color:var(--red);border:1px solid #e74c3c38}.nb-e{background:#c9a22718;color:var(--gold);border:1px solid #c9a22738}
+.nb-s{background:#2ecc7118;color:var(--green);border:1px solid #2ecc7138}.nb-el{background:#9b59b618;color:#c39bd3;border:1px solid #9b59b638}
+.nb-boss{background:#e74c3c28;color:var(--red);border:1px solid #e74c3c58}
+/* BATTLE */
+.battle-wrap{height:100%;background:linear-gradient(to bottom,rgba(8,8,16,.5),rgba(8,8,16,.88));display:flex;flex-direction:column;position:relative;z-index:2}
+.battle-main{flex:1;padding:.9rem;display:flex;flex-direction:column;gap:.75rem;overflow:hidden}
+.battle-arena{display:grid;grid-template-columns:1fr 70px 1fr;gap:.75rem;align-items:start;flex:1;min-height:0}
+.tpanel{background:rgba(12,12,22,.88);border:1px solid var(--border);border-radius:var(--r);padding:.75rem;backdrop-filter:blur(5px);max-height:275px;overflow-y:auto}
+.tpanel-lbl{font-size:.52rem;letter-spacing:.12em;text-transform:uppercase;color:var(--t3);margin-bottom:.45rem}
+.fighter{display:flex;align-items:center;gap:.45rem;padding:.38rem;border-radius:6px;margin-bottom:.25rem;border:1px solid transparent;transition:all .3s}
+.fighter.atk-anim{background:rgba(231,76,60,.1);border-color:rgba(231,76,60,.35);transform:scale(1.02)}
+.fighter.hit-anim{animation:fhit .25s}
+.fighter.dead{opacity:.18;filter:grayscale(1)}
+@keyframes fhit{0%,100%{transform:translateX(0)}25%{transform:translateX(-5px)}75%{transform:translateX(5px)}}
+.fsticker{width:36px;height:45px;background:var(--bg3);border-radius:4px;flex-shrink:0;background-size:cover}
+.finfo{flex:1;min-width:0}
+.fname{font-size:.72rem;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.fsub{font-size:.52rem;color:var(--t3)}
+.mbar{height:3px;background:var(--bg3);border-radius:2px;overflow:hidden;margin-top:2px}
+.mb{height:100%;border-radius:2px;transition:width .4s}
+.mb.hp{background:var(--green)}.mb.df{background:var(--blue)}
+.vs-col{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:.4rem}
+.vstxt{font-family:'Cinzel',serif;font-size:1.05rem;color:var(--t3)}
+.turnbadge{font-size:.55rem;color:var(--p3);background:#7c5cbf18;border:1px solid #7c5cbf38;border-radius:5px;padding:.22rem .42rem;text-align:center}
+.azone{font-size:1.7rem;min-height:2rem;text-align:center}
+.blog{background:rgba(12,12,22,.88);border:1px solid var(--border);border-radius:var(--r);padding:.5rem .75rem;height:90px;overflow-y:auto;font-size:.7rem;line-height:1.6;backdrop-filter:blur(5px)}
+.ll{padding:.03rem 0}.la{color:var(--red)}.lh{color:var(--green)}.ls{color:var(--gold)}.li{color:var(--blue)}
+.bbtns{display:flex;gap:.55rem;justify-content:center;padding-bottom:.25rem}
+/* PANELS */
+.pscreen{height:100%;display:flex;flex-direction:column;overflow:hidden;position:relative}
+.pbg{position:absolute;inset:0;background-size:cover;background-position:center;z-index:0}
+.pcontent{position:relative;z-index:1;flex:1;overflow-y:auto;padding:1.2rem;
+  background:linear-gradient(to bottom,rgba(8,8,16,.65),rgba(8,8,16,.92));
+  display:flex;flex-direction:column;gap:.8rem;max-width:660px;width:100%;margin:0 auto}
+.phead{text-align:center}.pico{font-size:2rem;margin-bottom:.3rem}
+.ptit{font-family:'Cinzel',serif;font-size:1.1rem}.pdesc{font-size:.76rem;color:var(--t2);line-height:1.7;margin-top:.3rem}
+.choices{display:flex;flex-direction:column;gap:.38rem}
+.choice{background:rgba(12,12,22,.92);border:1px solid var(--border);border-radius:var(--r2);padding:.7rem .95rem;cursor:pointer;text-align:left;transition:all .2s;color:var(--text);width:100%;backdrop-filter:blur(5px)}
+.choice:hover{border-color:var(--purple);background:rgba(124,92,191,.1)}
+.cht{font-weight:700;font-size:.82rem;margin-bottom:.1rem}.che{font-size:.65rem;color:var(--t3)}
+.sgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(135px,1fr));gap:.5rem}
+.sitem{background:rgba(12,12,22,.92);border:1px solid var(--border);border-radius:var(--r);padding:.75rem;text-align:center;cursor:pointer;transition:all .2s;backdrop-filter:blur(5px)}
+.sitem:hover{border-color:var(--gold);transform:translateY(-2px)}
+.sitem.broke{opacity:.28;cursor:not-allowed;pointer-events:none}
+.sico{font-size:1.55rem;margin-bottom:.28rem}.snm{font-size:.76rem;font-weight:700;margin-bottom:.14rem}
+.sde{font-size:.6rem;color:var(--t3);margin-bottom:.28rem}.spr{font-family:'Cinzel',serif;font-size:.78rem;color:var(--gold)}
+.rgrid{display:grid;grid-template-columns:1fr 1fr;gap:.55rem}
+.rwgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(148px,1fr));gap:.55rem}
+.rwcard{background:rgba(12,12,22,.92);border:1px solid var(--b2);border-radius:var(--r);padding:.9rem;text-align:center;cursor:pointer;transition:all .25s;backdrop-filter:blur(5px)}
+.rwcard:hover{border-color:var(--gold);transform:translateY(-3px);box-shadow:0 8px 20px rgba(201,162,39,.22)}
+.rwico{font-size:1.8rem;margin-bottom:.3rem}.rwnm{font-family:'Cinzel',serif;font-size:.84rem;margin-bottom:.2rem}
+.rwde{font-size:.66rem;color:var(--t3)}
+.skcard{background:rgba(12,12,22,.92);border:2px solid var(--gold);border-radius:var(--r);padding:.95rem;margin-bottom:.5rem;backdrop-filter:blur(5px)}
+.sknm{font-family:'Cinzel',serif;color:var(--gold);font-size:.88rem;margin-bottom:.2rem}
+.skcur{font-size:.72rem;color:var(--t2);margin-bottom:.28rem}.sknxt{font-size:.72rem;color:var(--green)}
+/* GAME OVER */
+#screen-gameover .bg-layer{background-image:url('assets/img/bg_night.jpg')}
+.gowrap{height:100%;display:flex;align-items:center;justify-content:center;padding:2rem;background:rgba(8,8,16,.88)}
+.gobox{text-align:center;max-width:450px;width:100%}
+.goico{font-size:3.8rem;margin-bottom:.55rem}.gottl{font-family:'Cinzel',serif;font-size:1.65rem;margin-bottom:.3rem}
+.gosub{color:var(--t3);font-size:.78rem;margin-bottom:1.1rem}
+.gostats{display:grid;grid-template-columns:1fr 1fr 1fr;gap:.5rem;margin-bottom:1.1rem}
+.gos{background:var(--bg2);border:1px solid var(--border);border-radius:var(--r2);padding:.5rem}
+.gosv{font-family:'Cinzel',serif;font-size:1.2rem;color:var(--p3)}.gosl{font-size:.58rem;color:var(--t3);text-transform:uppercase;margin-top:.14rem}
+.scorebox{background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);padding:.95rem;margin-bottom:.95rem}
+.scorelbl{font-size:.72rem;color:var(--t3);margin-bottom:.32rem}
+.scorebox input{background:var(--bg3);border:1px solid var(--b2);color:var(--text);border-radius:6px;padding:.45rem .8rem;font-size:.82rem;width:100%;outline:none}
+.scorebox input:focus{border-color:var(--purple)}
+/* LB SCREEN */
+#screen-leaderboard .bg-layer{background-image:url('assets/img/bg_afternoon.jpg')}
+.lbwrap{height:100%;display:flex;align-items:center;justify-content:center;padding:2rem;background:rgba(8,8,16,.88)}
+.lbfull{width:100%;max-width:520px}
+.lbftit{font-family:'Cinzel',serif;font-size:1.25rem;text-align:center;margin-bottom:.9rem;color:var(--gold)}
+.lbfrow{display:flex;align-items:center;gap:.8rem;padding:.58rem .82rem;background:var(--bg2);border:1px solid var(--border);border-radius:var(--r2);margin-bottom:.32rem}
+.lbfrow:nth-child(1){border-color:var(--gold);background:rgba(201,162,39,.07)}
+.lbfrow:nth-child(2){border-color:#c0c0c045}.lbfrow:nth-child(3){border-color:#cd7f3245}
+.lbfrank{font-family:'Cinzel',serif;color:var(--gold);min-width:1.8rem;font-size:.88rem}
+.lbfname{flex:1;font-size:.82rem}.lbfchar{font-size:.62rem;color:var(--t3)}
+.lbfscore{font-family:'Cinzel',serif;color:var(--p3);font-size:.86rem}
+::-webkit-scrollbar{width:3px}::-webkit-scrollbar-thumb{background:var(--b2);border-radius:2px}
+.toast{position:fixed;top:1rem;right:1rem;background:rgba(12,12,22,.96);border:1px solid var(--purple);border-radius:var(--r2);padding:.5rem .9rem;font-size:.76rem;z-index:9999;max-width:250px;animation:sli .3s,fdo .3s 2.7s forwards;backdrop-filter:blur(10px)}
+@keyframes sli{from{transform:translateX(110%)}to{transform:none}}@keyframes fdo{to{opacity:0}}
+.section-head{text-align:center;padding:.7rem;border-bottom:1px solid var(--border);flex-shrink:0;position:relative;z-index:1;background:rgba(8,8,16,.75)}
+.section-head h2{font-family:'Cinzel',serif;font-size:.92rem}.section-head p{font-size:.65rem;color:var(--t3);margin-top:.1rem}
+</style>
+</head>
+<body>
+<div id="particles"></div>
+<div class="fx-overlay" id="fxo"></div>
+<div class="screen-trans" id="trans"></div>
+
+
+<!-- TITLE -->
+<div id="screen-title" class="screen active">
+  <div class="bg-layer"></div>
+  <div class="title-wrap">
+    <div class="ttbadge">Jupiter Unified Solution presents</div>
+    <h1 class="tttitle">JODAN HIGH</h1>
+    <div class="ttsub">CHRONICLES</div>
+    <p class="ttline">Recrute aliados, atravesse os três trimestres e enfrente o boss final de Jodan High School.</p>
+    <div id="sbbadge" class="sb-badge sb-load">⏳ Conectando...</div>
+    <div style="display:flex;flex-direction:column;align-items:center;gap:.55rem;margin-bottom:1.3rem">
+      <button class="btn btn-main" onclick="showCharSelect()">⚔ INICIAR JORNADA</button>
+      <button class="btn btn-ghost" onclick="showLeaderboard()">🏆 Ranking Global</button>
+    </div>
+    <div class="lbbox"><div class="lbhead">🏆 TOP JOGADORES</div><div id="lbprev"></div></div>
+  </div>
+</div>
+<!-- CHAR SELECT -->
+<div id="screen-char" class="screen">
+  <div class="bg-layer"></div>
+  <div class="char-select-wrap">
+    <div class="section-head" style="width:100%;max-width:980px;border-radius:var(--r);margin-bottom:.7rem;border:1px solid var(--border)">
+      <h2>Escolha seu Personagem</h2><p>Você começa sozinho — recrute aliados pelo caminho</p></div>
+    <div class="char-grid" id="char-grid"></div>
+  </div>
+</div>
+<!-- MAP -->
+<div id="screen-map" class="screen">
+  <div class="bg-layer" id="map-bg"></div>
+  <div class="map-wrap">
+    <div class="hud" id="hud"></div>
+    <div class="map-body">
+      <div class="map-hdr"><div class="map-period" id="map-plbl">TRIMESTRE 1</div><div class="map-ttl">Escolha seu próximo passo</div></div>
+      <div class="map-path" id="map-path"></div>
+    </div>
+  </div>
+</div>
+<!-- BATTLE -->
+<div id="screen-battle" class="screen">
+  <div class="bg-layer" id="battle-bg"></div>
+  <div class="battle-wrap">
+    <div class="hud" id="hud-battle"></div>
+    <div class="battle-main">
+      <div class="battle-arena">
+        <div class="tpanel"><div class="tpanel-lbl">⚔ Seu Time</div><div id="pfighters"></div></div>
+        <div class="vs-col"><div class="vstxt">VS</div><div class="turnbadge" id="turnlbl">Turno 1</div><div class="azone" id="azone">⚡</div></div>
+        <div class="tpanel"><div class="tpanel-lbl" style="text-align:right">Inimigos ⚔</div><div id="efighters"></div></div>
+      </div>
+      <div class="blog" id="blog"></div>
+      <div class="bbtns">
+        <button class="btn btn-main btn-sm" id="btnfight" onclick="runBattle()">▶ Lutar</button>
+        <button class="btn btn-ghost btn-sm" id="btnauto" onclick="toggleAuto()">⚡ Auto</button>
+      </div>
+    </div>
+  </div>
+</div>
+<!-- EVENT -->
+<div id="screen-event" class="screen">
+  <div class="pbg" style="background-image:url('assets/img/bg_classroom.jpg')"></div>
+  <div class="pscreen">
+    <div class="hud" id="hud-event"></div>
+    <div class="pcontent">
+      <div class="phead"><div class="pico" id="evico">📜</div><div class="ptit" id="evtit">Evento</div><div class="pdesc" id="evdesc"></div></div>
+      <div class="choices" id="evch"></div>
+    </div>
+  </div>
+</div>
+<!-- SHOP -->
+<div id="screen-shop" class="screen">
+  <div class="pbg" style="background-image:url('assets/img/bg_garden.jpg')"></div>
+  <div class="pscreen">
+    <div class="hud" id="hud-shop"></div>
+    <div class="pcontent">
+      <div class="phead"><div class="pico">🏪</div><div class="ptit">Cantina da Escola</div><div class="pdesc">Gaste seu ouro com sabedoria.</div></div>
+      <div class="sgrid" id="shopitems"></div>
+      <button class="btn btn-ghost" onclick="goMap()">Continuar →</button>
+    </div>
+  </div>
+</div>
+<!-- RECRUIT -->
+<div id="screen-recruit" class="screen">
+  <div class="pbg" style="background-image:url('assets/img/bg_students.jpg')"></div>
+  <div class="pscreen">
+    <div class="hud" id="hud-recruit"></div>
+    <div class="pcontent">
+      <div class="phead"><div class="pico">🤝</div><div class="ptit">Recrutar Aliado</div><div class="pdesc" id="recdesc">Escolha um aliado (máx 4).</div></div>
+      <div class="rgrid" id="recgrid"></div>
+      <button class="btn btn-ghost" onclick="goMap()">Pular</button>
+    </div>
+  </div>
+</div>
+<!-- UPGRADE -->
+<div id="screen-upgrade" class="screen">
+  <div class="pbg" style="background-image:url('assets/img/bg_classroom.jpg')"></div>
+  <div class="pscreen">
+    <div class="hud" id="hud-upgrade"></div>
+    <div class="pcontent">
+      <div class="phead"><div class="pico">✨</div><div class="ptit">Aprimorar Habilidade</div><div class="pdesc">Evolua a habilidade especial de um membro.</div></div>
+      <div id="uplist"></div>
+      <button class="btn btn-ghost" onclick="goMap()">Pular</button>
+    </div>
+  </div>
+</div>
+<!-- REWARD -->
+<div id="screen-reward" class="screen">
+  <div class="pbg" style="background-image:url('assets/img/bg_corridor.jpg')"></div>
+  <div class="pscreen">
+    <div class="hud" id="hud-reward"></div>
+    <div class="pcontent">
+      <div class="phead"><div class="pico">🎁</div><div class="ptit">Recompensa de Batalha</div><div class="pdesc">Escolha sua recompensa.</div></div>
+      <div class="rwgrid" id="rwopts"></div>
+    </div>
+  </div>
+</div>
+<!-- GAME OVER -->
+<div id="screen-gameover" class="screen">
+  <div class="bg-layer"></div>
+  <div class="gowrap">
+    <div class="gobox">
+      <div class="goico" id="goico">💀</div><div class="gottl" id="gottl">Derrota</div><div class="gosub" id="gosub">Sua jornada termina aqui.</div>
+      <div class="gostats">
+        <div class="gos"><div class="gosv" id="gobatts">0</div><div class="gosl">Batalhas</div></div>
+        <div class="gos"><div class="gosv" id="goperiod">1</div><div class="gosl">Trimestre</div></div>
+        <div class="gos"><div class="gosv" id="goscore">0</div><div class="gosl">Pontos</div></div>
+      </div>
+      <div class="scorebox">
+        <div class="scorelbl">Salvar no ranking global</div>
+        <input type="text" id="nameinput" placeholder="Seu nome (máx 20)" maxlength="20" style="margin-top:.3rem">
+        <button class="btn btn-main" style="width:100%;margin-top:.55rem" onclick="submitScore()">💾 Salvar Pontuação</button>
+      </div>
+      <button class="btn btn-ghost" onclick="showTitle()">← Menu Principal</button>
+    </div>
+  </div>
+</div>
+<!-- LEADERBOARD -->
+<div id="screen-leaderboard" class="screen">
+  <div class="bg-layer"></div>
+  <div class="lbwrap">
+    <div class="lbfull">
+      <div class="lbftit">🏆 Hall da Fama — Jodan High</div>
+      <div id="lbfullrows"><div style="color:var(--t3);text-align:center;padding:1.5rem">Carregando...</div></div>
+      <button class="btn btn-ghost" onclick="showTitle()" style="width:100%;margin-top:.85rem">← Voltar</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// SUPABASE
+const SB='https://iintsahomdzzetmzfqmt.supabase.co';
+const SK='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlpbnRzYWhvbWR6emV0bXpmcW10Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzkwNTAyNjcsImV4cCI6MjA5NDYyNjI2N30.7bER_99D8lwenOsITjGOOtJQgr2klFnge2jqJJ2yBXw';
+let sbOk=false;
+async function sbReq(p,o={}){try{const r=await fetch(SB+p,{headers:{'apikey':SK,'Authorization':'Bearer '+SK,'Content-Type':'application/json',...(o.headers||{})},...o});if(!r.ok)return{error:r.status};const t=await r.text();return t?JSON.parse(t):{ok:true};}catch(e){return{error:e.message};}}
+async function initSB(){const el=document.getElementById('sbbadge');const r=await sbReq('/rest/v1/jodan_scores?select=count&limit=1');if(r&&!r.error){sbOk=true;el.className='sb-badge sb-ok';el.textContent='✅ Online — ranking global ativo';}else{el.className='sb-badge sb-err';el.textContent='⚠️ Ranking local';}loadLB();}
+
+// AUDIO
+const BGM={};let curBgm=null,muted=false;
+const BGM_P={flagship:'assets/audio/flagship.mp3',wander:'assets/audio/wander.mp3',shadow:'assets/audio/shadow.mp3',delusion:'assets/audio/delusion.mp3',black_world:'assets/audio/black_world.mp3',regret:'assets/audio/regret.mp3'};
+const SFX_P={click:'assets/audio/click.wav',hover:'assets/audio/hover.wav'};
+const sfxCache={};
+function playBgm(n,vol=0.5){if(muted)return;if(curBgm&&curBgm.n===n)return;if(curBgm){const oa=curBgm.a;const ti=setInterval(()=>{oa.volume=Math.max(0,oa.volume-.05);if(oa.volume<=0){clearInterval(ti);oa.pause();}},50);}if(!BGM[n]){BGM[n]=new Audio(BGM_P[n]);BGM[n].loop=true;}BGM[n].volume=0;BGM[n].play().catch(()=>{});const a=BGM[n];let v=0;const ti=setInterval(()=>{v=Math.min(vol,v+.03);a.volume=v;if(v>=vol)clearInterval(ti);},50);curBgm={n,a};}
+function playOnce(n,vol=0.65,cb){if(muted)return cb&&cb();const a=new Audio(BGM_P[n]);a.volume=vol;a.play().catch(()=>{});if(cb)a.addEventListener('ended',cb,{once:true});}
+function sfx(n){if(muted)return;if(!sfxCache[n]){sfxCache[n]=new Audio(SFX_P[n]);}sfxCache[n].currentTime=0;sfxCache[n].play().catch(()=>{});}
+function toggleMute(){muted=!muted;if(muted&&curBgm)curBgm.a.pause();else if(!muted&&curBgm)curBgm.a.play().catch(()=>{});document.querySelectorAll('.mcbtn').forEach(b=>b.textContent=muted?'🔇':'🔊');}
+
+// FX
+function fxFlash(t='hit'){const e=document.getElementById('fxo');e.className='fx-overlay fx-'+t;setTimeout(()=>e.className='fx-overlay',400);}
+function spawnNum(n,t,el){const r=el?el.getBoundingClientRect():{top:300,left:window.innerWidth/2,width:80};const d=document.createElement('div');d.className='dmg-num dn-'+t;d.textContent=t==='heal'?'+'+n:t==='skill'?'★'+n:'-'+n;d.style.left=(r.left+r.width/2-20)+'px';d.style.top=(r.top)+'px';document.body.appendChild(d);setTimeout(()=>d.remove(),1000);}
+
+// PETALS
+(()=>{const c=document.getElementById('particles');for(let i=0;i<16;i++){const p=document.createElement('div');p.className='petal';const sz=Math.random()*5+4;p.style.cssText=`width:${sz}px;height:${sz}px;left:${Math.random()*100}%;opacity:${Math.random()*.5+.2};animation-duration:${Math.random()*8+7}s;animation-delay:${Math.random()*10}s;background:hsl(${Math.random()*25+340},75%,${Math.random()*18+78}%)`;c.appendChild(p);}})();
+
+// Sticker map — stickers.jpg é 1024×682, grid 4×2, célula 256×341
+const SP={renjiro:[0,0],aoi:[1,0],kazuo:[2,0],mika:[3,0],sora:[0,1],yuuki:[1,1],taiga:[2,1],haru:[3,1]};
+const SW=256,SH=341;
+function stickerBg(id){const pos=SP[id];if(!pos)return'';return `background-image:url('assets/img/stickers.jpg');background-size:${SW*4}px ${SH*2}px;background-position:-${pos[0]*SW}px -${pos[1]*SH}px;background-repeat:no-repeat;`;}
+
+// CHARS
+const CHARS=[
+  {id:'haru',name:'Haru Arai',role:'Protagonista',art:'🌑',atk:12,def:4,hp:80,maxHp:80,unlocked:true,
+   skill:{name:'Assombração',desc:'2x dano + medo',lvl:1,sfx:'💜',
+    fx:(a,e,log,al,en)=>{const m=1+(a.skill.lvl-1)*.5;const d=~~(a.atk*2*m);dmgE(e,d,log,'skill');e.feared=true;log(`<span class="ls">Assombração! ${d}dmg + MEDO</span>`)}}},
+  {id:'aoi',name:'Aoi Shirakawa',role:'Mago',art:'💙',atk:10,def:3,hp:65,maxHp:65,unlocked:true,
+   skill:{name:'Cartas Arcanas',desc:'Acerta todos',lvl:1,sfx:'🃏',
+    fx:(a,_,log,al,en)=>{const m=1+(a.skill.lvl-1)*.5;en.filter(e=>e.hp>0).forEach(e=>dmgE(e,~~(a.atk*.8*m),log,'skill'));log(`<span class="ls">Cartas Arcanas — acerta todos!</span>`)}}},
+  {id:'renjiro',name:'Renjiro Takaoka',role:'Lutador',art:'🔥',atk:16,def:2,hp:90,maxHp:90,unlocked:false,
+   skill:{name:'Soco de Chama',desc:'3x dano',lvl:1,sfx:'💥',
+    fx:(a,e,log)=>{const d=~~(a.atk*3*(1+(a.skill.lvl-1)*.6));dmgE(e,d,log,'skill');log(`<span class="ls">Soco de Chama! ${d}dmg!</span>`)}}},
+  {id:'kazuo',name:'Kazuo Hayate',role:'Assassino',art:'🌿',atk:14,def:2,hp:60,maxHp:60,unlocked:false,
+   skill:{name:'Névoa',desc:'2.5x dano + esquiva',lvl:1,sfx:'🌀',
+    fx:(a,e,log)=>{const d=~~(a.atk*2.5*(1+(a.skill.lvl-1)*.5));dmgE(e,d,log,'skill');a.evade=2;log(`<span class="ls">Névoa! ${d}dmg + Esquiva×2</span>`)}}},
+  {id:'mika',name:'Mika Hanabusa',role:'Atiradora',art:'🌸',atk:11,def:3,hp:70,maxHp:70,unlocked:false,
+   skill:{name:'Rajada Rosa',desc:'Multi-hits',lvl:1,sfx:'🏹',
+    fx:(a,e,log)=>{let tot=0;const h=2+a.skill.lvl;for(let i=0;i<h;i++){const d=~~(a.atk*.6);dmgE(e,d,null,'atk');tot+=d;}log(`<span class="ls">Rajada! ${h}hits=${tot}dmg</span>`)}}},
+  {id:'sora',name:'Sora Amamiya',role:'Suporte',art:'📗',atk:7,def:5,hp:70,maxHp:70,unlocked:false,
+   skill:{name:'Cura Arcana',desc:'Cura o time',lvl:1,sfx:'💚',
+    fx:(a,_,log,al)=>{const h=~~((15+a.atk)*(1+(a.skill.lvl-1)*.5));al.forEach(m=>{if(m.hp>0){m.hp=Math.min(m.maxHp,m.hp+h);const fe=document.getElementById('pfighters');spawnNum(h,'heal',fe);}});log(`<span class="lh">Cura Arcana! +${h}HP todos!</span>`)}}},
+  {id:'yuuki',name:'Yuuki Kageyama',role:'Espadachim',art:'⚔',atk:13,def:6,hp:75,maxHp:75,unlocked:false,
+   skill:{name:'Corte Preciso',desc:'Dano puro',lvl:1,sfx:'⚔',
+    fx:(a,e,log)=>{const d=~~(a.atk*2*(1+(a.skill.lvl-1)*.5));e.hp=Math.max(0,e.hp-d);log(`<span class="ls">Corte Preciso! ${d}dmg PURO</span>`)}}},
+  {id:'taiga',name:'Taiga Kurosawa',role:'Berserker',art:'⚡',atk:18,def:1,hp:85,maxHp:85,unlocked:false,
+   skill:{name:'Fúria',desc:'Dano+HP perdido',lvl:1,sfx:'⚡',
+    fx:(a,e,log)=>{const d=~~((a.atk+(a.maxHp-a.hp)*.5)*(1+(a.skill.lvl-1)*.4));dmgE(e,d,log,'skill');log(`<span class="ls">Fúria! ${d}dmg explosivo!</span>`)}}},
+];
+const ENEMIES={1:[{name:'Valentão',art:'👊',atk:8,def:2,hp:40,maxHp:40,gold:15,skill:null},{name:'Garota Rival',art:'🎀',atk:7,def:3,hp:35,maxHp:35,gold:12,skill:null},{name:'Nerd',art:'🤓',atk:6,def:4,hp:45,maxHp:45,gold:13,skill:{name:'Escudo',fx:(e,al,log)=>{e.def+=3;log('<span class="li">Nerd→Escudo DEF+3</span>');}}},{name:'Gangue',art:'😤',atk:9,def:2,hp:38,maxHp:38,gold:14,skill:null}],
+2:[{name:'Capitão',art:'🥋',atk:12,def:4,hp:60,maxHp:60,gold:20,skill:{name:'Combo',fx:(e,al,log)=>{al.forEach(a=>{if(a.hp>0)dmgA(a,8,log);});log('<span class="la">Combo!</span>');}}},{name:'Guarda',art:'🛡',atk:10,def:7,hp:65,maxHp:65,gold:22,skill:null},{name:'Obcecado',art:'😡',atk:11,def:3,hp:55,maxHp:55,gold:18,skill:null}],
+3:[{name:'Valentão Sênior',art:'💢',atk:16,def:5,hp:80,maxHp:80,gold:28,skill:{name:'Pancada',fx:(e,al,log)=>{const t=al.filter(a=>a.hp>0)[0];if(t)dmgA(t,22,log);log('<span class="la">Pancada!</span>');}}},{name:'Inspetor',art:'👁',atk:14,def:6,hp:90,maxHp:90,gold:30,skill:null},{name:'Líder',art:'🔥',atk:17,def:4,hp:85,maxHp:85,gold:32,skill:null}]};
+const BOSSES=[{name:'Senpai Bully',art:'😈',atk:15,def:6,hp:120,maxHp:120,gold:60,isBoss:true,period:1,skill:{name:'Golpe Pesado',fx:(e,al,log)=>{const t=al.filter(a=>a.hp>0)[0];if(t)dmgA(t,28,log);log('<span class="la">Golpe Pesado!</span>');}}}
+,{name:'Presidente Rival',art:'🎖',atk:20,def:8,hp:150,maxHp:150,gold:80,isBoss:true,period:2,skill:{name:'Discurso',fx:(e,al,log)=>{al.forEach(a=>{if(a.hp>0)dmgA(a,12,log);});log('<span class="la">Discurso!</span>');}}}
+,{name:'Inspetor-Geral',art:'⚖',atk:24,def:10,hp:200,maxHp:200,gold:100,isBoss:true,period:3,skill:{name:'Punição',fx:(e,al,log)=>{al.forEach(a=>{if(a.hp>0){a.def=Math.max(0,a.def-3);dmgA(a,18,log);}});log('<span class="la">Punição Severa!</span>');}}}];
+const EVENTS=[{ico:'📚',tit:'Hora de Estudar',desc:'Uma pilha de livros aparece. O que fazer?',ch:[{t:'Estudar com afinco',e:'+20 ouro, +2 DEF todos',f:()=>{G.gold+=20;G.team.forEach(m=>m.def+=2);}},{t:'Olhada rápida',e:'+10 ouro',f:()=>{G.gold+=10;}},{t:'Ignorar',e:'Nada',f:()=>{}}]},{ico:'🍱',tit:'Cantina',desc:'A fila é enorme mas o cheiro é irresistível.',ch:[{t:'Enfrentar a fila',e:'+25HP todos',f:()=>{G.team.forEach(m=>m.hp=Math.min(m.maxHp,m.hp+25));}},{t:'Pedir pelo app',e:'+15HP, -20 ouro',f:()=>{G.team.forEach(m=>m.hp=Math.min(m.maxHp,m.hp+15));G.gold=Math.max(0,G.gold-20);}}]},{ico:'💪',tit:'Treino Secreto',desc:'Um veterano oferece treinamento especial.',ch:[{t:'Treinar ao máximo',e:'+5ATK, -10HP',f:()=>{G.team.forEach(m=>{m.atk+=5;m.hp=Math.max(1,m.hp-10);});}},{t:'Treino moderado',e:'+3ATK todos',f:()=>{G.team.forEach(m=>m.atk+=3);}},{t:'Descansar',e:'Cura completa',f:()=>{G.team.forEach(m=>m.hp=m.maxHp);}}]},{ico:'🎁',tit:'Presente Misterioso',desc:'Uma caixa com seu nome no corredor.',ch:[{t:'Abrir',e:'+50 ouro',f:()=>{G.gold+=50;}},{t:'Abrir com cuidado',e:'+30 ouro, +1DEF',f:()=>{G.gold+=30;G.team.forEach(m=>m.def+=1);}},{t:'Ignorar',e:'+2DEF todos',f:()=>{G.team.forEach(m=>m.def+=2);}}]},{ico:'🏆',tit:'Torneio Relâmpago',desc:'Mini-torneio com recompensa.',ch:[{t:'Participar',e:'+60 ouro, -15HP líder',f:()=>{G.gold+=60;if(G.team[0])G.team[0].hp=Math.max(1,G.team[0].hp-15);}},{t:'Assistir',e:'+25 ouro',f:()=>{G.gold+=25;}}]},{ico:'🔮',tit:'Oráculo',desc:'Uma estudante misteriosa oferece premonição.',ch:[{t:'Pagar',e:'-20 ouro, +4DEF',f:()=>{G.gold=Math.max(0,G.gold-20);G.team.forEach(m=>m.def+=4);}},{t:'Grátis',e:'+3ATK líder',f:()=>{if(G.team[0])G.team[0].atk+=3;}}]},{ico:'✨',tit:'Mestre das Habilidades',desc:'Aprimorar habilidade do time.',isUp:true,ch:[]},{ico:'🤝',tit:'Aliado em Potencial',desc:'Estudante forte quer se juntar.',isRec:true,ch:[]}];
+const SHOP=[{ico:'💊',nm:'Kit Médico',de:'+30HP todos',pr:30,f:()=>{G.team.forEach(m=>m.hp=Math.min(m.maxHp,m.hp+30));}},{ico:'⚔',nm:'Faca',de:'+3ATK todos',pr:40,f:()=>{G.team.forEach(m=>m.atk+=3);}},{ico:'🛡',nm:'Pasta',de:'+3DEF todos',pr:40,f:()=>{G.team.forEach(m=>m.def+=3);}},{ico:'🍡',nm:'Doce',de:'+20HPmax',pr:35,f:()=>{G.team.forEach(m=>{m.maxHp+=20;m.hp=Math.min(m.maxHp,m.hp+20);});}},{ico:'📜',nm:'Grimório',de:'+6ATK líder',pr:25,f:()=>{if(G.team[0])G.team[0].atk+=6;}},{ico:'🧪',nm:'Elixir',de:'Revive 1 membro',pr:55,f:()=>{const d=G.team.find(m=>m.hp<=0)||G.team[0];if(d)d.hp=~~(d.maxHp*.5);}},{ico:'💰',nm:'Bico',de:'+80 ouro',pr:15,f:()=>{G.gold+=80;}},{ico:'🌟',nm:'Pergaminho',de:'+4ATK +2DEF',pr:65,f:()=>{G.team.forEach(m=>{m.atk+=4;m.def+=2;});}}];
+
+// STATE
+let G={hero:null,team:[],gold:50,map:[],nodeIdx:0,curPeriod:1,battles:0,won:false,bEnemies:[],lastScore:0};
+const dc=o=>JSON.parse(JSON.stringify(o,(_,v)=>typeof v==='function'?undefined:v));
+const pick=a=>a[~~(Math.random()*a.length)];
+const shuf=a=>{const b=[...a];for(let i=b.length-1;i>0;i--){const j=~~(Math.random()*(i+1));[b[i],b[j]]=[b[j],b[i]];}return b;};
+const rnd=(a,b)=>a+~~(Math.random()*(b-a+1));
+
+// MAP GENERATION with branching paths and crossings
+function genPeriod(p){
+  const types=['battle','battle','event','shop','elite'];
+  const rowCounts=[[2,3,2],[3,2,3],[2,2,2]][p-1]||[2,3,2];
+  const rows=[];
+  // Row 0: single entry
+  rows.push([{id:`${p}_0_0`,type:'battle',period:p,done:false,available:p===1}]);
+  rowCounts.forEach((cnt,ri)=>{
+    const pool=shuf([...types]);
+    rows.push(Array.from({length:cnt},(_,i)=>({id:`${p}_${ri+1}_${i}`,type:pool[i%types.length],period:p,done:false,available:false})));
+  });
+  // Boss row
+  rows.push([{id:`${p}_boss`,type:'boss',period:p,done:false,available:false,isBoss:true}]);
+  // Build connections with branching/crossings
+  const conns=[];
+  for(let ri=0;ri<rows.length-1;ri++){
+    const from=rows[ri],to=rows[ri+1];
+    const toReached=new Set();
+    from.forEach((node,fi)=>{
+      const totalFrom=from.length,totalTo=to.length;
+      const pri=Math.min(totalTo-1,Math.round(fi*(totalTo-1)/Math.max(1,totalFrom-1)));
+      conns.push({from:node.id,to:to[pri].id});
+      toReached.add(pri);
+      // 30% chance of cross-path connection
+      if(totalTo>1&&Math.random()<.30){
+        const alt=(pri+1)%totalTo;
+        conns.push({from:node.id,to:to[alt].id});
+        toReached.add(alt);
+      }
+    });
+    // Ensure all destinations reachable
+    to.forEach((_,ti)=>{if(!toReached.has(ti)){conns.push({from:from[rnd(0,from.length-1)].id,to:to[ti].id});}});
+  }
+  return{rows,conns};
+}
+function genMap(){return[1,2,3].map(p=>genPeriod(p));}
+function findNode(id,pm){for(const r of pm.rows)for(const n of r)if(n.id===id)return n;return null;}
+
+// RENDER MAP with SVG paths
+const NM={battle:{ico:'⚔',lbl:'Batalha',badge:'nb-b'},event:{ico:'📜',lbl:'Evento',badge:'nb-e'},shop:{ico:'🏪',lbl:'Loja',badge:'nb-s'},elite:{ico:'💀',lbl:'Elite',badge:'nb-el'},boss:{ico:'👑',lbl:'Boss',badge:'nb-boss'}};
+function renderMap(){
+  const el=document.getElementById('map-path');el.innerHTML='';
+  const pm=G.map[G.curPeriod-1];if(!pm)return;
+  document.getElementById('map-plbl').textContent=`TRIMESTRE ${G.curPeriod} DE 3`;
+  const bgs=['bg_morning','bg_garden','bg_afternoon'];
+  document.getElementById('map-bg').style.backgroundImage=`url('assets/img/${bgs[G.curPeriod-1]}.jpg')`;
+  const{rows,conns}=pm;
+  const W=680,rowH=95,totalH=rows.length*rowH+20;
+  const pos={};
+  rows.forEach((row,ri)=>{const y=ri*rowH+47;row.forEach((n,ni)=>{pos[n.id]={x:W/(row.length+1)*(ni+1),y};});});
+  const wrap=document.createElement('div');
+  wrap.style.cssText=`position:relative;width:${W}px;height:${totalH}px;margin:0 auto`;
+  const svg=document.createElementNS('http://www.w3.org/2000/svg','svg');
+  svg.style.cssText=`position:absolute;inset:0;width:100%;height:100%;pointer-events:none`;
+  svg.setAttribute('viewBox',`0 0 ${W} ${totalH}`);
+  // Draw connections
+  const drawn=new Set();
+  conns.forEach(c=>{
+    const key=c.from+'→'+c.to;if(drawn.has(key))return;drawn.add(key);
+    const p1=pos[c.from],p2=pos[c.to];if(!p1||!p2)return;
+    const fn=findNode(c.from,pm);
+    const path=document.createElementNS('http://www.w3.org/2000/svg','path');
+    const mx=(p1.x+p2.x)/2,my=(p1.y+p2.y)/2;
+    const curve=`M${p1.x},${p1.y} Q${mx+20},${my-10} ${p2.x},${p2.y}`;
+    path.setAttribute('d',curve);
+    path.setAttribute('fill','none');
+    path.setAttribute('stroke',fn?.done?'#2ecc71':'#3d3660');
+    path.setAttribute('stroke-width','2');
+    if(!fn?.done)path.setAttribute('stroke-dasharray','5,4');
+    svg.appendChild(path);
+  });
+  wrap.appendChild(svg);
+  // Draw nodes
+  rows.forEach(row=>{row.forEach(node=>{
+    const p=pos[node.id];const m=NM[node.type]||NM.battle;
+    const nd=document.createElement('div');
+    const cls=['node',node.done?'done':(node.available?'av':'lk'),node.type==='boss'?'boss-n':''].join(' ').trim();
+    nd.className=cls;
+    nd.style.cssText=`left:${p.x-31}px;top:${p.y-31}px`;
+    nd.innerHTML=`<span class="nicon">${m.ico}</span><span class="nlbl">${m.lbl}</span><span class="nbadge ${m.badge}">${m.lbl}</span>`;
+    if(node.available&&!node.done){nd.onclick=()=>{sfx('click');enterNode(node);};nd.onmouseenter=()=>sfx('hover');}
+    wrap.appendChild(nd);
+  });});
+  el.appendChild(wrap);
+}
+
+function enterNode(node){
+  node.done=true;
+  const pm=G.map[G.curPeriod-1];
+  const nxIds=pm.conns.filter(c=>c.from===node.id).map(c=>c.to);
+  pm.rows.forEach(r=>r.forEach(n=>{if(nxIds.includes(n.id))n.available=true;}));
+  G.nodeIdx++;
+  thenTrans(()=>{
+    switch(node.type){
+      case'battle':startBattle(node.period,false);break;
+      case'elite':startBattle(node.period,'elite');break;
+      case'boss':startBattle(node.period,'boss');break;
+      case'event':startEvent();break;
+      case'shop':startShop();break;
+    }
+  });
+}
+
+// BATTLE
+function dmgE(e,dmg,log,t='atk'){if(!e||e.hp<=0)return;const bl=Math.max(0,e.def-2);const r=Math.max(1,dmg-bl);e.hp=Math.max(0,e.hp-r);if(log)log(`<span class="${t==='skill'?'ls':'la'}"> →${e.name} ${r}dmg${bl>0?` (${bl}b)`:''}</span>`);fxFlash('hit');const ef=document.getElementById('efighters');if(ef){const es=ef.querySelectorAll('.fighter');if(es.length)spawnNum(r,t==='skill'?'skill':'atk',es[0]);}}
+function dmgA(a,dmg,log,t='atk'){if(!a||a.hp<=0)return;if(a.evade>0){a.evade--;if(log)log(`<span class="li"> →${a.name} esquivou!</span>`);return;}const bl=Math.max(0,a.def-2);const r=Math.max(1,dmg-bl);a.hp=Math.max(0,a.hp-r);if(log)log(`<span class="la"> →${a.name} ${r}dmg${bl>0?` (${bl}b)`:''}</span>`);fxFlash('hit');const pf=document.getElementById('pfighters');if(pf){const ps=pf.querySelectorAll('.fighter');if(ps.length)spawnNum(r,'atk',ps[0]);}}
+
+let bLog=[],bTurn=0,bRun=false,bAuto=false,bTimer=null;
+function startBattle(period,type){
+  const p=typeof period==='number'?period:1;
+  if(type==='boss'){G.bEnemies=[dc(BOSSES[p-1]||BOSSES[0])];playBgm('black_world',.55);}
+  else{
+    const pool=ENEMIES[p]||ENEMIES[1];
+    const cnt=G.team.length<=1?1:rnd(1,Math.min(2,G.team.length));
+    G.bEnemies=shuf(pool).slice(0,cnt).map(e=>{const c=dc(e);if(type==='elite'){c.hp=~~(c.hp*1.5);c.maxHp=c.hp;c.atk=~~(c.atk*1.3);c.name='Elite '+c.name;}c.hp=c.maxHp;return c;});
+    playBgm('delusion',.5);
+  }
+  const bgs=['bg_corridor','bg_classroom','bg_garden'];
+  document.getElementById('battle-bg').style.backgroundImage=`url('assets/img/${bgs[p-1]}.jpg')`;
+  bLog=[];bTurn=0;bRun=false;bAuto=false;
+  if(bTimer){clearInterval(bTimer);bTimer=null;}
+  document.getElementById('btnfight').disabled=false;
+  document.getElementById('btnauto').textContent='⚡ Auto';
+  renderBattle();showScreen('battle');updateHud('hud-battle');
+}
+function renderBattle(){renderF('pfighters',G.team);renderF('efighters',G.bEnemies);document.getElementById('turnlbl').textContent=`Turno ${bTurn+1}`;renderBLog();}
+function renderF(id,fighters){
+  document.getElementById(id).innerHTML=fighters.map(f=>{
+    const hp=Math.max(0,(f.hp/f.maxHp)*100),df=Math.min(100,(f.def/15)*100);
+    const ss=stickerBg(f.id);
+    return `<div class="fighter${f.hp<=0?' dead':''}" id="fg_${f.name.replace(/\s/g,'_')}">
+      <div class="fsticker" style="${ss}${!ss?'display:flex;align-items:center;justify-content:center;font-size:1.4rem':''}"></div>
+      <div class="finfo">
+        <div class="fname">${f.name}${f.evade>0?' 🌀':''}</div>
+        <div class="fsub">ATK:${f.atk} DEF:${f.def}</div>
+        <div class="mbar"><div class="mb hp" style="width:${hp}%"></div></div>
+        <div class="mbar"><div class="mb df" style="width:${df}%"></div></div>
+        <div class="fsub">${f.hp}/${f.maxHp}HP${f.skill?' • '+f.skill.name:''}</div>
+      </div></div>`;
+  }).join('');
+}
+function addLog(m){bLog.push(m);renderBLog();}
+function renderBLog(){const e=document.getElementById('blog');e.innerHTML=bLog.slice(-28).map(l=>`<div class="ll">${l}</div>`).join('');e.scrollTop=e.scrollHeight;}
+function runBattle(){if(bRun)return;bRun=true;document.getElementById('btnfight').disabled=true;execTurn(()=>{bRun=false;if(!bAuto)document.getElementById('btnfight').disabled=false;});}
+function toggleAuto(){
+  if(bAuto){bAuto=false;if(bTimer){clearInterval(bTimer);bTimer=null;}document.getElementById('btnauto').textContent='⚡ Auto';document.getElementById('btnfight').disabled=false;}
+  else{bAuto=true;document.getElementById('btnauto').textContent='⏹ Parar';document.getElementById('btnfight').disabled=true;
+    bTimer=setInterval(()=>{if(checkEnd()){clearInterval(bTimer);bTimer=null;return;}if(!bRun){bRun=true;execTurn(()=>{bRun=false;checkEnd();});}},1200);}
+}
+function execTurn(cb){
+  bTurn++;addLog(`<strong style="color:var(--t3)">━━ Turno ${bTurn} ━━</strong>`);
+  const ap=G.team.filter(m=>m.hp>0),ae=G.bEnemies.filter(e=>e.hp>0);
+  if(!ap.length||!ae.length){if(cb)cb();return;}
+  let d=0;
+  ap.forEach(m=>{
+    setTimeout(()=>{
+      // Check if battle already ended
+      const ae2=G.bEnemies.filter(e=>e.hp>0);
+      const ap2=G.team.filter(x=>x.hp>0);
+      if(!ae2.length||!ap2.length)return;
+      const t=ae2[0];
+      if(bTurn%3===0&&m.skill){document.getElementById('azone').textContent=m.skill.sfx||'✨';m.skill.fx(m,t,addLog,G.team,G.bEnemies);}
+      else{document.getElementById('azone').textContent='⚔';addLog(`<span class="la">${m.art} ${m.name} ataca ${t.art} ${t.name}</span>`);dmgE(t,m.atk,addLog,'atk');}
+      renderBattle();
+    },d);d+=340;
+  });
+  setTimeout(()=>{
+    const ae2=G.bEnemies.filter(e=>e.hp>0);
+    const ap2=G.team.filter(x=>x.hp>0);
+    if(!ae2.length||!ap2.length){if(cb)cb();return;}
+    ae2.forEach(e=>{
+      const t=ap2[~~(Math.random()*ap2.length)];
+      if(bTurn%4===0&&e.skill)e.skill.fx(e,ap2,addLog);
+      else{addLog(`<span class="la">${e.art} ${e.name} ataca ${t.art} ${t.name}</span>`);dmgA(t,e.atk,addLog,'atk');}
+    });
+    document.getElementById('turnlbl').textContent=`Turno ${bTurn+1}`;
+    renderBattle();if(cb)cb();
+  },d+340);
+}
+function checkEnd(){
+  const ap=G.team.filter(m=>m.hp>0),ae=G.bEnemies.filter(e=>e.hp>0);
+  if(!ap.length){addLog('💀 Derrota...');renderBattle();if(bTimer){clearInterval(bTimer);bTimer=null;}setTimeout(()=>gameOver(false),1500);return true;}
+  if(!ae.length){
+    const gold=G.bEnemies.reduce((s,e)=>s+(e.gold||15),0);G.gold+=gold;G.battles++;
+    addLog(`<span class="lh">✅ Vitória! +${gold} ouro</span>`);renderBattle();
+    if(bTimer){clearInterval(bTimer);bTimer=null;}
+    const isBoss=G.bEnemies[0]?.isBoss,bossP=G.bEnemies[0]?.period;
+    if(isBoss&&bossP===3){playOnce('regret',.7,()=>playBgm('flagship',.5));setTimeout(()=>gameOver(true),2000);return true;}
+    if(isBoss){playOnce('regret',.65,()=>{G.curPeriod=Math.min(3,G.curPeriod+1);const nm=G.map[G.curPeriod-1];if(nm)nm.rows[0].forEach(n=>n.available=true);setTimeout(()=>showReward(),1200);});return true;}
+    setTimeout(()=>showReward(),1200);return true;
+  }
+  return false;
+}
+
+// EVENT
+function startEvent(){
+  const ev=pick(EVENTS);
+  if(ev.isUp){showUpgrade();return;}
+  if(ev.isRec){showRecruit();return;}
+  document.getElementById('evico').textContent=ev.ico;
+  document.getElementById('evtit').textContent=ev.tit;
+  document.getElementById('evdesc').textContent=ev.desc;
+  const ch=document.getElementById('evch');ch.innerHTML='';
+  ev.ch.forEach(c=>{const b=document.createElement('button');b.className='choice';b.innerHTML=`<div class="cht">${c.t}</div><div class="che">${c.e}</div>`;b.onclick=()=>{sfx('click');c.f();toast('✅ '+c.t);updateHud('hud-event');setTimeout(goMap,600);};ch.appendChild(b);});
+  updateHud('hud-event');showScreen('event');
+}
+// SHOP
+function startShop(){
+  const items=shuf(SHOP).slice(0,5);
+  const el=document.getElementById('shopitems');el.innerHTML='';
+  items.forEach(item=>{const cant=G.gold<item.pr;const d=document.createElement('div');d.className='sitem'+(cant?' broke':'');d.innerHTML=`<div class="sico">${item.ico}</div><div class="snm">${item.nm}</div><div class="sde">${item.de}</div><div class="spr">💰 ${item.pr}</div>`;if(!cant)d.onclick=()=>{sfx('click');G.gold-=item.pr;item.f();toast('🛒 '+item.nm);updateHud('hud-shop');startShop();};el.appendChild(d);});
+  updateHud('hud-shop');showScreen('shop');
+}
+// RECRUIT
+function showRecruit(){
+  const ids=G.team.map(m=>m.id);const avail=CHARS.filter(c=>!ids.includes(c.id));const opts=shuf(avail).slice(0,3);
+  const el=document.getElementById('recgrid');el.innerHTML='';
+  document.getElementById('recdesc').textContent=G.team.length>=4?'Time cheio (máx 4).':'Escolha um aliado.';
+  if(!opts.length){el.innerHTML='<p style="color:var(--t3);text-align:center;grid-column:1/-1;padding:1rem">Todos recrutados!</p>';}
+  else opts.forEach(c=>{
+    const ss=stickerBg(c.id);
+    const d=document.createElement('div');d.className='ccard';
+    d.innerHTML=`<div class="csticker" style="${ss}${!ss?'display:flex;align-items:center;justify-content:center;font-size:2.5rem':''}"></div>
+      <div class="cname">${c.name}</div><div class="crole">${c.role}</div>
+      <div class="cstats"><div class="cst"><div class="cst-l">ATK</div><div class="cst-v va">${c.atk}</div></div><div class="cst"><div class="cst-l">DEF</div><div class="cst-v vd">${c.def}</div></div><div class="cst"><div class="cst-l">HP</div><div class="cst-v vh">${c.hp}</div></div></div>
+      <div class="cskill">⚡ ${c.skill.name}: ${c.skill.desc}</div>`;
+    if(G.team.length<4){const cc=c;d.onclick=()=>{sfx('click');const nc=dc(cc);nc.skill=cc.skill;G.team.push(nc);toast(`${cc.art} ${cc.name} entrou!`);goMap();};}
+    else d.style.opacity='.32';
+    el.appendChild(d);
+  });
+  updateHud('hud-recruit');showScreen('recruit');
+}
+// UPGRADE
+function showUpgrade(){
+  const el=document.getElementById('uplist');el.innerHTML='';
+  G.team.forEach((m,i)=>{
+    const nxt=m.skill.lvl<3?['→ +50% poder','→ +100% poder+bônus'][m.skill.lvl-1]:'Máximo';
+    el.innerHTML+=`<div class="skcard"><div class="sknm">${m.art} ${m.name} — ${m.skill.name} <small style="color:var(--t3)">Lv.${m.skill.lvl}</small></div><div class="skcur">Atual: ${m.skill.desc}</div><div class="sknxt">✨ ${nxt}</div>${m.skill.lvl<3?`<button class="btn btn-main btn-sm" style="margin-top:.45rem" onclick="doUp(${i})">Aprimorar</button>`:'<span style="font-size:.68rem;color:var(--t3)">No máximo</span>'}</div>`;
+  });
+  updateHud('hud-upgrade');showScreen('upgrade');
+}
+function doUp(i){const m=G.team[i];if(m.skill.lvl>=3)return;m.skill.lvl++;if(m.skill.lvl===3)m.atk+=3;sfx('click');toast(`✨ ${m.name} Skill Lv.${m.skill.lvl}!`);goMap();}
+// REWARD
+function showReward(){
+  const pool=[{ico:'💰',nm:'Ouro Extra',de:'+50 ouro',f:()=>{G.gold+=50;}},{ico:'💊',nm:'Cura Total',de:'HP completo',f:()=>{G.team.forEach(m=>m.hp=m.maxHp);}},{ico:'⚔',nm:'Treino ATK',de:'+3ATK todos',f:()=>{G.team.forEach(m=>m.atk+=3);}},{ico:'🛡',nm:'Treino DEF',de:'+3DEF todos',f:()=>{G.team.forEach(m=>m.def+=3);}},{ico:'🤝',nm:'Recrutar',de:'Adicione aliado',f:()=>{showRecruit();return'r';}},{ico:'✨',nm:'Aprimorar',de:'Melhore skill',f:()=>{showUpgrade();return'r';}},{ico:'🌟',nm:'Poder Duplo',de:'+2ATK +2DEF',f:()=>{G.team.forEach(m=>{m.atk+=2;m.def+=2;});}},{ico:'🧪',nm:'Elixir',de:'+30HPmax todos',f:()=>{G.team.forEach(m=>{m.maxHp+=30;m.hp=Math.min(m.maxHp,m.hp+30);});}}];
+  const opts=shuf(pool).slice(0,3);
+  const el=document.getElementById('rwopts');el.innerHTML='';
+  opts.forEach(r=>{const d=document.createElement('div');d.className='rwcard';d.innerHTML=`<div class="rwico">${r.ico}</div><div class="rwnm">${r.nm}</div><div class="rwde">${r.de}</div>`;d.onclick=()=>{sfx('click');const res=r.f();if(res!=='r'){toast('🎁 '+r.nm);goMap();}};el.appendChild(d);});
+  updateHud('hud-reward');showScreen('reward');
+}
+// GAME OVER
+function gameOver(won){G.won=won;const score=G.battles*100+(won?500:0)+G.gold*2;G.lastScore=score;document.getElementById('goico').textContent=won?'🏆':'💀';document.getElementById('gottl').textContent=won?'Vitória Completa!':'Derrota';document.getElementById('gosub').textContent=won?'Você dominou Jodan High! Lendário!':'Sua jornada termina aqui.';document.getElementById('gobatts').textContent=G.battles;document.getElementById('goperiod').textContent=G.curPeriod;document.getElementById('goscore').textContent=score;document.getElementById('nameinput').value='';if(!won)playBgm('shadow',.4);thenTrans(()=>showScreen('gameover'));}
+// HUD
+function updateHud(id){const el=document.getElementById(id);if(!el)return;const hpP=G.team.length?~~(G.team.filter(m=>m.hp>0).length/G.team.length*100):0;const p=G.curPeriod||1;const ss=G.hero&&stickerBg(G.hero.id);const imgHtml=ss?`<div class="hud-art" style="${ss}width:36px;height:45px;background-size:${256*4}px ${341*2}px;border-radius:4px"></div>`:`<span class="hud-art">${G.hero?.art||'⚔'}</span>`;el.innerHTML=`<div style="display:flex;align-items:center;gap:.5rem">${imgHtml}<div><div class="hud-name">${G.hero?.name||'?'}</div><div class="hud-bars"><div class="brow"><span class="blbl">time</span><div class="bbg"><div class="bf hp" style="width:${hpP}%"></div></div></div></div></div></div><div class="hudteam">${G.team.map(m=>`<div class="tdot${m.hp<=0?' dead':''}" title="${m.name}">${m.art}</div>`).join('')}${G.team.length<4?'<div class="tdot empty">+</div>':''}</div><div class="hud-gold">💰 ${G.gold}</div><div class="hud-r">Trim. <strong>${p}</strong><br>${G.battles} batalhas</div><button class="mcbtn" onclick="toggleMute()">🔊</button>`;}
+// SCREENS
+function showScreen(n){document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));const e=document.getElementById('screen-'+n);if(e)e.classList.add('active');}
+function thenTrans(fn){const t=document.getElementById('trans');t.classList.add('go');setTimeout(()=>{fn();t.classList.remove('go');},380);}
+function goMap(){thenTrans(()=>{renderMap();updateHud('hud');showScreen('map');});}
+function showTitle(){showScreen('title');playBgm('flagship',.5);loadLB();}
+function showCharSelect(){sfx('click');const grid=document.getElementById('char-grid');grid.innerHTML='';CHARS.forEach(c=>{const ss=stickerBg(c.id);const d=document.createElement('div');d.className='ccard'+(c.unlocked?'':' ccard-locked');d.innerHTML=`${!c.unlocked?'<span class="lkbadge">🔒</span>':''}<div class="csticker" style="${ss}${!ss?'display:flex;align-items:center;justify-content:center;font-size:2.5rem':''}"></div><div class="cname">${c.name}</div><div class="crole">${c.role}</div><div class="cstats"><div class="cst"><div class="cst-l">ATK</div><div class="cst-v va">${c.atk}</div></div><div class="cst"><div class="cst-l">DEF</div><div class="cst-v vd">${c.def}</div></div><div class="cst"><div class="cst-l">HP</div><div class="cst-v vh">${c.hp}</div></div></div><div class="cskill">⚡ ${c.skill.name}: ${c.skill.desc}</div>`;if(c.unlocked){const cc=c;d.onclick=()=>{sfx('click');selectChar(cc.id);};}grid.appendChild(d);});playBgm('wander',.5);thenTrans(()=>showScreen('char'));}
+function selectChar(id){const ch=CHARS.find(x=>x.id===id);const c=dc(ch);c.skill=ch.skill;G={hero:c,team:[c],gold:50,map:genMap(),nodeIdx:0,curPeriod:1,battles:0,won:false,bEnemies:[],lastScore:0};G.map[0].rows[0].forEach(n=>n.available=true);playBgm('shadow',.5);thenTrans(()=>{renderMap();updateHud('hud');showScreen('map');});}
+function showLeaderboard(){loadLBFull();thenTrans(()=>showScreen('leaderboard'));}
+// LEADERBOARD
+async function submitScore(){const name=(document.getElementById('nameinput').value.trim()||'Anônimo').slice(0,20);const payload={player_name:name,score:G.lastScore,character:G.hero?.name||'?',battles:G.battles,won:G.won};let saved=false;if(sbOk){const r=await sbReq('/rest/v1/jodan_scores',{method:'POST',body:JSON.stringify(payload),headers:{'Prefer':'return=minimal'}});saved=!r?.error;}const local=JSON.parse(localStorage.getItem('jodan_scores')||'[]');local.push({...payload,created_at:new Date().toISOString()});local.sort((a,b)=>b.score-a.score);localStorage.setItem('jodan_scores',JSON.stringify(local.slice(0,50)));toast(saved?'✅ Salvo no ranking global!':'✅ Salvo localmente!');setTimeout(()=>showTitle(),1600);}
+async function loadLB(){let sc=[];if(sbOk){const r=await sbReq('/rest/v1/jodan_scores?select=player_name,score,character,won&order=score.desc&limit=5');if(r&&!r.error&&Array.isArray(r))sc=r;}if(!sc.length)sc=JSON.parse(localStorage.getItem('jodan_scores')||'[]').slice(0,5);const el=document.getElementById('lbprev');if(!sc.length){el.innerHTML='<div style="color:var(--t3);font-size:.76rem;text-align:center;padding:.4rem">Seja o primeiro!</div>';return;}el.innerHTML=sc.map((s,i)=>`<div class="lbrow"><span class="lbrank">${['🥇','🥈','🥉'][i]||i+1}</span><div><div class="lbname">${s.player_name}</div><span style="font-size:.6rem;color:var(--t3)">${s.character}${s.won?' 🏆':''}</span></div><span class="lbscore">${s.score}</span></div>`).join('');}
+async function loadLBFull(){const el=document.getElementById('lbfullrows');el.innerHTML='<div style="color:var(--t3);text-align:center;padding:1.5rem">Carregando...</div>';let sc=[];if(sbOk){const r=await sbReq('/rest/v1/jodan_scores?select=*&order=score.desc&limit=30');if(r&&!r.error&&Array.isArray(r))sc=r;}if(!sc.length)sc=JSON.parse(localStorage.getItem('jodan_scores')||'[]').slice(0,30);const medals=['🥇','🥈','🥉'];if(!sc.length){el.innerHTML='<p style="text-align:center;color:var(--t3);padding:2rem">Nenhum score ainda.</p>';return;}el.innerHTML=sc.map((s,i)=>`<div class="lbfrow"><span class="lbfrank">${medals[i]||i+1}</span><div><div class="lbfname">${s.player_name}</div><div class="lbfchar">${s.character} • ${s.battles} batalhas${s.won?' 🏆':''}</div></div><span class="lbfscore">${s.score}</span></div>`).join('');}
+// TOAST
+function toast(msg){const t=document.createElement('div');t.className='toast';t.textContent=msg;document.body.appendChild(t);setTimeout(()=>t.remove(),3100);}
+// HOVER SFX
+document.addEventListener('mouseover',e=>{if(e.target.closest('.btn,.choice,.ccard,.sitem,.rwcard,.node.av'))sfx('hover');});
+// INIT
+playBgm('flagship',.5);
+initSB();
+</script>
+</body>
+</html>
